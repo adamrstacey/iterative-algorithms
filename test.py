@@ -32,8 +32,7 @@ class TestIterativeAlgorithms(unittest.TestCase):
         x = np.linalg.solve(A, b)
         x_hat = ia.gmres(A, b)
         rmse = np.sqrt(np.mean((x - x_hat)**2))
-        self.assertLessEqual(rmse, 1e-5)
-        #self.assertLessEqual(rmse, rmse)
+        self.assertLessEqual(rmse, 1e-8)
 
 
 if __name__ == "__main__":
