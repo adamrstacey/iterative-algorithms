@@ -32,19 +32,21 @@ def gmres(A, b, x0=None, tol=1e-5, max_iters=None):
     # Set Maximum Number of Iterations
     if max_iters is None:
         max_iters = m
+    elif max_iters <= 0:
+        return
 
     # Initialize Arnoldi Iteration Object
     arnoldi = Arnoldi(A, b)
-
+    
     # Iterate
-    for _ in range(max_iters):
+    for k in range(max_iters):
         if beta < tol:
-            break
+            return x
         
         # Arnoldi Iteration
         arnoldi.iterate()
+        Q = arnoldi.form_Q()
         H = arnoldi.form_H()
-        Q = arnoldi.Q
 
         # Right Hand Side
         RHS = np.zeros((H.shape[0], 1))
@@ -52,9 +54,10 @@ def gmres(A, b, x0=None, tol=1e-5, max_iters=None):
         
         # Solve Least Squares Problem and Update Solution
         y = np.linalg.lstsq(H, RHS)[0]; del H, RHS
-        x = np.matmul(Q[:, :-1], y)
+        x = np.matmul(Q[:, :k+1], y)
+        
         # Update Residual
         r = b - np.matmul(A, x)
         beta = np.linalg.norm(r)
-
+    
     return x

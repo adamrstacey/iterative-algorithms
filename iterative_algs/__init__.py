@@ -1,11 +1,10 @@
 # Import Core Utilities
-from .arnoldi import Arnoldi, arnoldi_iteration
+from .arnoldi import Arnoldi
 from .gmres import gmres
 
 # Define the public API
 __all__ = [
         'Arnoldi',
-        'arnoldi_iteration',
         'gmres'
         ]
 

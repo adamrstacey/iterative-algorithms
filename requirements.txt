@@ -1,2 +1,4 @@
 # Only 1 Requirement Beyond Base Python Modules
 numpy
+pytest
+pytest-cov

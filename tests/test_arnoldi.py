@@ -1,5 +1,8 @@
 import unittest
 import numpy as np
+import sys
+import os
+sys.path.append(os.path.abspath(".."))
 import iterative_algs as ia
 
 class TestIterativeAlgorithms(unittest.TestCase):

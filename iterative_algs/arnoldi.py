@@ -1,3 +1,4 @@
+import sys
 import numpy as np
 
 class Arnoldi:
@@ -9,14 +10,29 @@ class Arnoldi:
             A: square m x m matrix, saved as a numpy ndarray
             b: m x 1 vector, saved as a numpy ndarray
         """
+        if A.shape[0] != A.shape[1]:
+            print('Cannot perform Arnoldi iteration: A is not square')
+            sys.exit()
+
         self.A = A
         self.b = b
         self.q_list = [self.b/np.linalg.norm(b)]
+        self.m = A.shape[0]
         self.Q = self.form_Q()
-        self.H = [] # List of Lists, each sublist is a column of H
+        self.H = []
 
     def iterate(self, k=1):
         """ Performs k iterations of the Arnoldi iteration """
+        
+        # Handle zero- or negative-iteration case
+        if k <= 0:
+            return
+
+        # Handle case when space is already complete
+        if len(self.q_list) > self.m:
+            return
+        
+        # Iterate and compute vectors
         for j in range(k):
             v = np.matmul(self.A, self.q_list[-1])
             self.H.append([])
@@ -25,11 +41,15 @@ class Arnoldi:
                 v -= (self.H[-1][-1] * q)
             self.H[-1].append(np.linalg.norm(v))
             self.q_list.append(v/self.H[-1][-1])
-        self.Q = self.form_Q()
-    
+            if len(self.q_list) > self.m:
+                return
+
+        return 
+
     def form_Q(self):
         """ Concatenates list of orthogonal vectors into an ndarray """
-        return np.concatenate(self.q_list, 1)
+        Q = np.concatenate(self.q_list, 1)
+        return Q[:, :self.m]
     
     def form_H(self):
         """ Forms (n + 1) x n Hessenberg matrix after n applications of iteration """
@@ -38,45 +58,34 @@ class Arnoldi:
         for j in range(n):
             for i in range(len(self.H[j])):
                 H[i, j] = self.H[j][i]
-        return H
+        return H[:self.m + 1, :self.m]
 
-def arnoldi_iteration(A, b, k):
-    """
-    Perform Arnoldi iteration to generate an orthonormal basis of the Krylov subspace.
+    def get_eigs(self, n):
+        """ 
+        Approximates k eigenvalues and eigenvectors after k iterations 
+        Args:
+            n: number of eigenvalues/eigenvectors to be returned.
+                Note: n < k, the number of completed iterations.
+        Returns:
+            D: array containing eigenvalue estimates
+            V: array containing eigenvector estimates
+        """
 
-    Parameters:
-    A : ndarray
-        Square matrix of size (n, n)
-    b : ndarray
-        Initial vector of size (n,)
-    k : int
-        Number of iterations (dimension of Krylov subspace)
+        # Change number of eigenvalues, if necessary
+        if n > self.A.shape[0]:
+            n = self.A.shape[0]
+        if n > len(self.H):
+            n = len(self.H)
+        
+        # Get Hessenberg matrix
+        H = self.form_H()[:-1, :]
 
-    Returns:
-    Q : ndarray
-        Orthonormal basis of Krylov subspace (n, k+1)
-    H : ndarray
-        Upper Hessenberg matrix (k+1, k)
-    """
-    n = A.shape[0]
-    Q = np.zeros((n, k+1))
-    H = np.zeros((k+1, k))
+        # Solve for eigenvalues/eigenvectors and sort
+        D, V = np.linalg.eig(H)
+        idx = np.argsort(np.abs(D))[::-1]
+        D = D[idx]
+        V = V[:, idx]
+        return D[:n], V[:, :n]
 
-    # Normalize the initial vector
-    Q[:, 0] = b / np.linalg.norm(b)
 
-    for j in range(k):
-        v = A @ Q[:, j]
-        for i in range(j+1):
-            H[i, j] = np.dot(Q[:, i], v)
-            v = v - H[i, j] * Q[:, i]
-        H[j+1, j] = np.linalg.norm(v)
-        if H[j+1, j] != 0:
-            Q[:, j+1] = v / H[j+1, j]
-        else:
-            # Breakdown: Krylov subspace has been exhausted
-            print(f"Breakdown at iteration {j}")
-            return Q[:, :j+1], H[:j+2, :j+1]
-
-    return Q, H
 
