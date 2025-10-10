@@ -11,8 +11,12 @@ class Arnoldi:
             b: m x 1 vector, saved as a numpy ndarray
         """
         if A.shape[0] != A.shape[1]:
-            print('Cannot perform Arnoldi iteration: A is not square')
-            sys.exit()
+            print('Cannot perform Arnoldi iteration: A is not square!')
+            return
+        if A.shape[0] != b.shape[0]:
+            print('Cannot perform Arnoldi iteration: A and b have mismatching dimensions!')
+        if b.ndim == 1:
+            b = np.expand_dims(b, 1)
 
         self.A = A
         self.b = b
@@ -60,7 +64,7 @@ class Arnoldi:
                 H[i, j] = self.H[j][i]
         return H[:self.m + 1, :self.m]
 
-    def get_eigs(self, n):
+    def get_eigs(self, n=1):
         """ 
         Approximates k eigenvalues and eigenvectors after k iterations 
         Args:
@@ -72,6 +76,8 @@ class Arnoldi:
         """
 
         # Change number of eigenvalues, if necessary
+        if n <= 0:
+            return
         if n > self.A.shape[0]:
             n = self.A.shape[0]
         if n > len(self.H):
