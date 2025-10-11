@@ -20,8 +20,6 @@ jobs:
       - name: Install Dependencies
         run: |
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-      - name: Run Test Cases
-        run: python test.py
       - name: Run Tests with Coverage
         run: |
           pytest --cov=iterative_algs --cov-report=term-missing
