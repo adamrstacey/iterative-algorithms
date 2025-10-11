@@ -11,10 +11,9 @@ class Arnoldi:
             b: m x 1 vector, saved as a numpy ndarray
         """
         if A.shape[0] != A.shape[1]:
-            print('Cannot perform Arnoldi iteration: A is not square!')
-            return
+            raise ValueError("Arnoldi iteration requires a square matrix.")
         if A.shape[0] != b.shape[0]:
-            print('Cannot perform Arnoldi iteration: A and b have mismatching dimensions!')
+            raise ValueError("Dimension mismatch between LHS and RHS.")
         if b.ndim == 1:
             b = np.expand_dims(b, 1)
 

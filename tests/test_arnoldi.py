@@ -6,7 +6,11 @@ sys.path.append(os.path.abspath(".."))
 import iterative_algs as ia
 
 class TestIterativeAlgorithms(unittest.TestCase):
-
+    
+    # /////////////////////////////////////////////
+    # ARNOLDI ITERATION TESTS
+    # /////////////////////////////////////////////
+    
     def test_arnoldi(self):
         """ Tests the arnoldi iteration to make sure the Krylov space is generated correctly """
         # Form matrix and generate orthogonal basis for Krylov space
@@ -32,8 +36,22 @@ class TestIterativeAlgorithms(unittest.TestCase):
         """ Ensures proper response from supplying rectangular matrix """
         A = np.random.randn(5, 4)
         b = np.random.randn(5, 1)
+        with self.assertRaises(ValueError):
+            arnoldi = ia.Arnoldi(A, b)
+
+    def test_dim_mismatch(self):
+        """ Ensures proper response when A and b have different number of rows/cols"""
+        A = np.random.randn(5, 5)
+        b = np.random.randn(3, 1)
+        with self.assertRaises(ValueError):
+            arnoldi = ia.Arnoldi(A, b)
+
+    def test_1d_RHS(self):
+        """ Ensures that 1D RHS is handled correctly """
+        A = np.random.randn(5, 5)
+        b = np.random.randn(5)
         arnoldi = ia.Arnoldi(A, b)
-        self.assertEqual(arnoldi, None)
+        self.assertEqual(arnoldi.b.ndim, 2)
 
     def test_zero_iterations(self):
         """ Tests that nothing happens when 0 iterations are called """
@@ -101,6 +119,10 @@ class TestIterativeAlgorithms(unittest.TestCase):
         self.assertEqual(H.shape[0], A.shape[1] + 1)
         self.assertEqual(H.shape[1], A.shape[1])
 
+    # /////////////////////////////////////////////
+    # GMRES TESTS
+    # /////////////////////////////////////////////
+
     def test_gmres_solve(self):
         """ Tests GMRES solver """
         A = np.random.randn(5, 5)
@@ -109,6 +131,24 @@ class TestIterativeAlgorithms(unittest.TestCase):
         x_hat = ia.gmres(A, b)
         rmse = np.sqrt(np.mean((x - x_hat)**2))
         self.assertLessEqual(rmse, 1e-8)
+
+    def test_1D_array(self):
+        """ Ensure that 1D RHS is handlded correctly """
+        A = np.random.randn(5, 5)
+        b = np.random.randn(5)
+        x_hat = ia.gmres(A, b)[:, 0]
+        x = np.linalg.solve(A, b)
+        rmse = np.sqrt(np.mean((x - x_hat)**2))
+        self.assertLessEqual(rmse, 1e-8)
+
+    def test_zero_or_negative_max_iters(self):
+        """ Ensures that None is returned when max_iters set <= 0 """
+        A = np.random.randn(5, 5)
+        b = np.random.randn(5, 1)
+        x_hat = ia.gmres(A, b, max_iters=0)
+        self.assertEqual(x_hat, None)
+        x_hat = ia.gmres(A, b, max_iters=-2)
+        self.assertEqual(x_hat, None)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
