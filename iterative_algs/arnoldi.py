@@ -77,16 +77,19 @@ class Arnoldi:
         # Change number of eigenvalues, if necessary
         if n <= 0:
             return
-        if n > self.A.shape[0]:
-            n = self.A.shape[0]
+        
+        if n > self.m:
+            n = self.m
+        
         if n > len(self.H):
             n = len(self.H)
         
         # Get Hessenberg matrix
         H = self.form_H()[:-1, :]
-
+        Q = self.form_Q()[:, :H.shape[0]]
         # Solve for eigenvalues/eigenvectors and sort
         D, V = np.linalg.eig(H)
+        V = np.matmul(Q, V); del Q
         idx = np.argsort(np.abs(D))[::-1]
         D = D[idx]
         V = V[:, idx]
