@@ -42,8 +42,11 @@ class Arnoldi:
             for q in self.q_list:
                 self.H[-1].append(np.dot(q.squeeze(), v.squeeze()))
                 v -= (self.H[-1][-1] * q)
-            self.H[-1].append(np.linalg.norm(v))
-            self.q_list.append(v/self.H[-1][-1])
+            mag_v = np.linalg.norm(v)
+            if mag_v <= 1e-14:
+                return
+            self.H[-1].append(mag_v)
+            self.q_list.append(v/mag_v)
             if len(self.q_list) > self.m:
                 return
 

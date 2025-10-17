@@ -16,8 +16,95 @@ class TestLanczos(unittest.TestCase):
         A = np.random.randn(5, 5)
         A = np.matmul(A.T, A) # Make A symmetric
         b = np.random.randn(5, 1) 
+        
+        # Form Krylov Space with Lanczos Iteration
         lanczos = ia.Lanczos(A, b)
-        self.assertEqual(lanczos.A.shape[0], A.shape[0])
+        lanczos.iterate(4)
+        Q_hat = lanczos.form_Q()
+
+        # Form Krylov Space Manually
+        K = [b/np.linalg.norm(b)]
+        for j in range(1, A.shape[1]):
+            K.append(np.matmul(A, K[-1]))
+        Q = np.linalg.qr(np.concatenate(K, 1))[0]
+
+        # RMSE in Q_hat
+        rmse = np.sqrt(np.mean((np.abs(Q) - np.abs(Q_hat))**2))
+        self.assertLessEqual(rmse, 1e-8)
+
+    def test_non_symmetric(self):
+        """ Test that correct exception is raised when A is not symmetric """
+        A = np.random.randn(5, 5)
+        b = np.random.randn(5, 1)
+        with self.assertRaises(ValueError):
+            lanczos = ia.Lanczos(A, b)
+
+    def test_low_rank(self):
+        """ Tests that Krylov space is generated correctly for low-rank matrix """
+        A = np.random.randn(5, 1)
+        A = np.matmul(A, A.T) # Make A symmetric
+        b = np.random.randn(5, 1)
+        lanczos = ia.Lanczos(A, b)
+        lanczos.iterate(5)
+        Q = lanczos.form_Q()
+        rmse = np.sqrt(np.mean((np.matmul(Q.T, Q) - np.identity(Q.shape[1]))**2))
+        self.assertLessEqual(rmse, 1e-14)
+
+    def test_rectangular_matrix(self):
+        """ Ensures proper response from supplying rectangular matrix """
+        A = np.random.randn(5, 4)
+        b = np.random.randn(5, 1)
+        with self.assertRaises(ValueError):
+            lanczos = ia.Lanczos(A, b)
+
+    def test_dim_mismatch(self):
+        """ Ensures proper response when A and b have different number of rows/cols"""
+        A = np.random.randn(5, 5)
+        A = np.matmul(A.T, A)
+        b = np.random.randn(3, 1)
+        with self.assertRaises(ValueError):
+            arnoldi = ia.Lanczos(A, b)
+
+    def test_1d_RHS(self):
+        """ Ensures that 1D RHS is handled correctly """
+        A = np.random.randn(5, 5)
+        A = np.matmul(A.T, A)
+        b = np.random.randn(5)
+        lanczos = ia.Lanczos(A, b)
+        self.assertEqual(lanczos.b.ndim, 2)
+
+    def test_zero_iterations(self):
+        """ Tests that nothing happens when 0 iterations are called """
+        A = np.random.randn(5, 5)
+        A = np.matmul(A.T, A)
+        b = np.random.randn(5, 1)
+        lanczos = ia.Lanczos(A, b)
+        lanczos.iterate(0)
+        Q = lanczos.form_Q()
+        self.assertEqual(Q.shape[1], 1)
+
+    def test_negative_iterations(self):
+        """ Tests that nothing happens when negative iterations are called """
+        A = np.random.randn(5, 5)
+        A = np.matmul(A.T, A)
+        b = np.random.randn(5, 1)
+        lanczos = ia.Lanczos(A, b)
+        lanczos.iterate(-2)
+        Q = lanczos.form_Q()
+        self.assertEqual(Q.shape[1], 1)
+
+    #def test_too_many_iterations(self):
+        #""" Tests that the correct number of basis vectors are produced """
+        #A = np.random.randn(5, 5)
+        #A = np.matmul(A.T, A)
+        #b = np.random.randn(5, 1)
+        #lanczos = ia.Lanczos(A, b)
+        #lanczos.iterate(10)
+        #Q = lanczos.form_Q()
+        #H = lanczos.form_H()
+        #self.assertEqual(Q.shape[1], A.shape[1])
+        #self.assertEqual(H.shape[0], A.shape[1] + 1)
+        #self.assertEqual(H.shape[1], A.shape[1])
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

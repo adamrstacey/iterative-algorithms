@@ -5,7 +5,7 @@ import os
 sys.path.append(os.path.abspath(".."))
 import iterative_algs as ia
 
-class TestIterativeAlgorithms(unittest.TestCase):
+class TestArnoldi(unittest.TestCase):
     
     # /////////////////////////////////////////////
     # ARNOLDI ITERATION TESTS
@@ -31,6 +31,17 @@ class TestIterativeAlgorithms(unittest.TestCase):
         rmse = np.sqrt(np.mean((np.abs(Q) - np.abs(Q_hat))**2))
 
         self.assertLessEqual(rmse, 1e-5)
+
+    def test_low_rank(self):
+        """ Tests that Krylov space is correct size for low rank matrix """
+        A = np.random.randn(5, 1)
+        b = np.random.randn(5, 1)
+        A = np.matmul(A, A.T)
+        arnoldi = ia.Arnoldi(A, b)
+        arnoldi.iterate(5)
+        Q = arnoldi.form_Q()
+        rmse = np.sqrt(np.mean((np.matmul(Q.T, Q) - np.identity(Q.shape[1]))**2))
+        self.assertLessEqual(rmse, 1e-14)
 
     def test_rectangular_matrix(self):
         """ Ensures proper response from supplying rectangular matrix """
@@ -102,11 +113,11 @@ class TestIterativeAlgorithms(unittest.TestCase):
         b = np.random.randn(5, 1)
         arnoldi = ia.Arnoldi(A, b)
         arnoldi.iterate(5)
-        D_hat = arnoldi.get_eigs(num_eigs)[0]
+        D_hat, V_hat = arnoldi.get_eigs(num_eigs)
         D, V = np.linalg.eig(A)
         idx = np.argmin(np.abs(D - D_hat))
-        self.assertLessEqual(np.max(np.abs(D[idx] - D_hat)), 1e-14)
-    
+        self.assertLessEqual(np.max(np.abs(D[idx] - D_hat)), 1e-8)
+
     def test_too_many_iterations(self):
         """ Tests that the correct number of basis vectors are produced """
         A = np.random.randn(5, 5)

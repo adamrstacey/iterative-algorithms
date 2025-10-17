@@ -44,8 +44,11 @@ class Lanczos:
                 v -= ((self.beta[-1] * self.q_list[-2]) + (self.alpha[-1] * self.q_list[-1]))
             else:
                 v -= (self.alpha[-1] * self.q_list[-1])
-            self.beta.append(np.linalg.norm(v))
-            self.q_list.append(v/self.beta[-1])
+            mag_v = np.linalg.norm(v)
+            if mag_v <= 1e-14:
+                return
+            self.beta.append(mag_v)
+            self.q_list.append(v/mag_v)
             if len(self.q_list) > self.m:
                 return
         
@@ -58,7 +61,7 @@ class Lanczos:
 
     def form_H(self):
         """ Returns (n + 1) x n Hessenberg matrix after n iters """
-        n = len(self.alpha)
+        n = len(self.alpha) 
         H = np.zeros((n, n - 1), dtype=self.b.dtype)
         H[0, :2] = np.array([self.alpha[0], self.beta[0]])
         H[-1, -1] = self.beta[-1]
