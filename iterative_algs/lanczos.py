@@ -61,13 +61,18 @@ class Lanczos:
 
     def form_H(self):
         """ Returns (n + 1) x n Hessenberg matrix after n iters """
-        n = len(self.alpha) 
-        H = np.zeros((n, n - 1), dtype=self.b.dtype)
+        n = min(len(self.alpha), self.m) 
+        H = np.zeros((n + 1, n), dtype=self.b.dtype)
+        if n == 1:
+            H[0, 0] = self.alpha[0]
+            H[1, 0] = self.beta[0]
+            return H
         H[0, :2] = np.array([self.alpha[0], self.beta[0]])
+        H[-2, -2:] = np.array([self.beta[-2], self.alpha[-1]])
         H[-1, -1] = self.beta[-1]
         for j in range(1, n - 1):
             H[j, j - 1: j + 2] = np.array([self.beta[j - 1], self.alpha[j], self.beta[j]])
-        return H
+        return H[:(n + 1), :n]
 
     def get_eigs(self, n=1):
         """
@@ -81,11 +86,11 @@ class Lanczos:
         """
         
         # Change number of eigenvalues, if necessary
-        if n <= 0:
-            return
-
         if n > self.m or n > len(self.alpha):
             n = min(self.m, len(self.alpha))
+        
+        if n <= 0:
+            return 
 
         # Get Hessenberg Matrix and Q
         H = self.form_H()[:-1, :]
@@ -97,6 +102,3 @@ class Lanczos:
         V = V[:, ::-1]
         return D[:n], V[:, :n]
         
-
-
-

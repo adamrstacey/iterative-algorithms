@@ -78,15 +78,12 @@ class Arnoldi:
         """
 
         # Change number of eigenvalues, if necessary
+        if n > self.m or n > len(self.H):
+            n = min(self.m, len(self.H))
+        
         if n <= 0:
             return
-        
-        if n > self.m:
-            n = self.m
-        
-        if n > len(self.H):
-            n = len(self.H)
-        
+
         # Get Hessenberg matrix
         H = self.form_H()[:-1, :]
         Q = self.form_Q()[:, :H.shape[0]]
