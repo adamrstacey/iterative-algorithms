@@ -105,6 +105,17 @@ class TestLanczos(unittest.TestCase):
         self.assertEqual(Q.shape[1], A.shape[1])
         self.assertEqual(H.shape[0], A.shape[1] + 1)
         self.assertEqual(H.shape[1], A.shape[1])
+    
+    def test_form_H_one_iter(self):
+        """ Tests forming H after only 1 iteration """
+        A = np.random.randn(5, 5)
+        A = np.matmul(A.T, A)
+        b = np.random.randn(5, 1)
+        lanczos = ia.Lanczos(A, b)
+        lanczos.iterate()
+        H = lanczos.form_H()
+        self.assertEqual(H.shape[0], 2)
+        self.assertEqual(H.shape[1], 1)
 
     def test_lanczos_eigs(self):
         """ Tests computing eigenvalues using Lanczos iteration """
