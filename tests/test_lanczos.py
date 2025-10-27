@@ -169,6 +169,56 @@ class TestLanczos(unittest.TestCase):
         D = lanczos.get_eigs(num_eigs)[0]
         self.assertEqual(D.shape[0], A.shape[0])
 
+    # /////////////////////////////////////////////
+    # CONJUGATE GRADIENT TESTS
+    # /////////////////////////////////////////////
+    
+    def test_conjugate_gradient(self):
+        """ Tests solving Ax = b when A is s.p.d """
+        A = np.random.randn(5, 5)
+        A = np.matmul(A.T, A)
+        b = np.random.randn(5, 1)
+
+        # True Solution
+        x = np.linalg.solve(A, b)
+
+        # Approx Solution
+        x_hat = ia.conjugate_gradient(A, b)
+
+        # Error
+        rmse = np.sqrt(np.mean((x - x_hat)**2))
+
+        self.assertLessEqual(rmse, 1e-8)
+
+    def test_1D_array(self):
+        """ Tests that CG solver handles 1D RHS array """
+        A = np.random.randn(5, 5)
+        A = np.matmul(A.T, A)
+        b = np.random.randn(5, 1)
+
+        # True Solution
+        x = np.linalg.solve(A, b)
+        
+        # Remove Unitary Dims
+        b = b.squeeze()
+        x_hat = ia.conjugate_gradient(A, b)
+
+        # Error
+        rmse = np.sqrt(np.mean((x - x_hat)**2))
+
+        self.assertLessEqual(rmse, 1e-8)
+
+    def test_zero_or_negative_iters(self):
+        """ Tests that nothing is returned when max_iters <= 0 """
+        A = np.random.randn(5, 5)
+        A = np.matmul(A.T, A)
+        b = np.random.randn(5, 1)
+
+        x_hat = ia.conjugate_gradient(A, b, max_iters=0)
+        self.assertEqual(x_hat, None)
+        x_hat = ia.conjugate_gradient(A, b, max_iters=-2)
+        self.assertEqual(x_hat, None)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

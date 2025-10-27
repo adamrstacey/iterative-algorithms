@@ -2,12 +2,14 @@
 from .arnoldi import Arnoldi
 from .lanczos import Lanczos
 from .gmres import gmres
+from .conjugate_gradient import conjugate_gradient
 
 # Define the public API
 __all__ = [
         'Arnoldi',
         'Lanczos',
-        'gmres'
+        'gmres',
+        'conjugate_gradient'
         ]
 
 # Define Version
