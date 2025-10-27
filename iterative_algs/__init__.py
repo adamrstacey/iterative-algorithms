@@ -1,6 +1,7 @@
 # Import Core Utilities
 from .arnoldi import Arnoldi
 from .lanczos import Lanczos
+from .krylov import Krylov
 from .gmres import gmres
 from .conjugate_gradient import conjugate_gradient
 
@@ -8,6 +9,7 @@ from .conjugate_gradient import conjugate_gradient
 __all__ = [
         'Arnoldi',
         'Lanczos',
+        'Krylov',
         'gmres',
         'conjugate_gradient'
         ]

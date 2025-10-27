@@ -1,5 +1,5 @@
 import numpy as np
-from .arnoldi import Arnoldi
+from arnoldi import Arnoldi
 
 def gmres(A, b, x0=None, tol=1e-5, max_iters=None):
     """ 
