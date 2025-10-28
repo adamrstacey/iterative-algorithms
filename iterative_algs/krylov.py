@@ -1,8 +1,8 @@
 import numpy as np
-from arnoldi import Arnoldi
-from lanczos import Lanczos
-from gmres import gmres
-from conjugate_gradient import conjugate_gradient
+from .arnoldi import Arnoldi
+from .lanczos import Lanczos
+from .gmres import gmres
+from .conjugate_gradient import conjugate_gradient
 
 class Krylov:
     """ Class for generating Krylov Subspaces and solving Ax=b or Av = av """
