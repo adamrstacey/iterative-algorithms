@@ -53,6 +53,9 @@ class Krylov:
             return conjugate_gradient(self.A, self.b)
         else:
             return gmres(self.A, self.b)
+    
+    def get_eigs(self, num_eigs=1):
+        return self.iteration.get_eigs(num_eigs)
 
     def test_symmetric(self):
         """ Tests whether A is symmetric """
