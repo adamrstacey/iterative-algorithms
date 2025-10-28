@@ -22,4 +22,4 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Run Tests with Coverage
         run: |
-          pytest --cov=iterative_algs --cov-report=term-missing
+          pytest -v --cov=iterative_algs --cov-report=term-missing
